@@ -1,2 +1,8 @@
 ssh -R 80:localhost:9097 serveo.net -- public jenskin to internet
 jenskin hieudx1 - 123456
+ngrok http 8080
+sudo systemctl status jenkins
+chmod +x /Users/hieudx/.config/tmc/apache-maven-3.5.4/bin/mvn
+service jenkins restart
+local docker: root - 123456789
+harbor: admin - Harbor12345 - folder /harbor: sudo ./install.sh

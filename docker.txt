@@ -1,3 +1,68 @@
 stop all container is running: docker stop $(docker ps -aq) 
 remove all image: docker rmi $(docker images -q)
 remove all container: docker rm $(docker ps -aq)
+systemctl restart docker
+systemctl stop docker
+systemctl status docker
+
+
+docker login http://localhost:5000
+docker pull localhost:5000/gateway
+docker run -it localhost:5000/gateway /bin/bash
+sudo chmod -R 777 /var/run/docker.sock
+
+
+=== get image from local registry
+curl -X GET http://localhost:5000/v2/gateway/tags/list
+curl -X GET http://localhost:5000/v2/_catalog
+curl -X DELETE localhost:5000/v2/repositories/gateway/tags/latest
+curl -sS -X DELETE localhost:5000/v2/gateway/_manifests/28
+hieudx1_pipeline_config/.local-registry/data/docker/registry/v2/repositories/gateway/_manifests/revisions/sha256/b6122d3e4091cd05c0455dd36378b61144ac043f02681eadb5a6649a4e72cf2c
+curl -X DELETE http://localhost:5000/v2/nevalabs/gateway/manifests/sha256:b6122d3e4091cd05c0455dd36378b61144ac043f02681eadb5a6649a4e72cf2c -v
+
+
+docker build -t gateway:latest .
+
+minikube docker-env
+minikube start --insecure-registry="docker.local:5000"
+
+
+kubectl get pods
+kubectl run gateway --image=gateway:latest --image-pull-policy=Never
+
+
+kubectl create deployment demo --image=gateway --dry-run=client -o=yaml > deployment.yaml
+kubectl create service clusterip demo --tcp=9091:9091 --dry-run=client -o=yaml >> deployment.yaml
+
+kubectl delete -n default pod gateway
+kubectl delete -n default deployment demo
+
+kubectl apply -f deployment.yaml
+
+kubectl create secret generic regcred \
+    --from-file=.dockerconfigjson=/home/hieudx/.docker/config.json \
+    --type=kubernetes.io/dockerconfigjson
+
+edit /var/lib/boot2docker/profile and add to $EXTRA_ARGS --insecure-registry 192.168.1.18:8081
+
+
+kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
+
+
+====== config local registry
+kubectl get nodes -o wide  -- Ip node
+eval $(minikube docker-env)
+
+minikube start --insecure-registry localhost:5000
+minikube addons enable registry
+docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
+
+==== Helm chart 
+helm create deployment
+helm template test ./deployment
+helm install deployment-gateway deployment/
+helm repo add harbor http://localhost:8081
+helm repo add stable --username=admin --password=Harbor12345 myrepo http://localhost:8081/harbor/projects/1/repositories
+helm repo add harbor http://localhost:8081
+
+helm install harbor .
