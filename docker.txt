@@ -11,7 +11,6 @@ docker pull localhost:5000/gateway
 docker run -it localhost:5000/gateway /bin/bash
 sudo chmod -R 777 /var/run/docker.sock
 
-
 === get image from local registry
 curl -X GET http://localhost:5000/v2/gateway/tags/list
 curl -X GET http://localhost:5000/v2/_catalog
@@ -58,7 +57,7 @@ minikube addons enable registry
 docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
 
 ==== Helm chart 
-helm create deployment
+helm create gateway
 helm template test ./deployment
 helm install deployment-gateway deployment/
 helm repo add harbor http://localhost:8081
@@ -66,3 +65,12 @@ helm repo add stable --username=admin --password=Harbor12345 myrepo http://local
 helm repo add harbor http://localhost:8081
 
 helm install harbor .
+helm install -n default gateway2 gateway/ 
+helm uninstall gateway2
+
+
+===
+
+cat /home/hieudx/.minikube/ca.crt | base64 -w 0; echo
+cat /home/hieudx/.minikube/profiles/minikube/client.crt | base64 -w 0; echo
+cat /home/hieudx/.minikube/profiles/minikube/client.key | base64 -w 0; echo
