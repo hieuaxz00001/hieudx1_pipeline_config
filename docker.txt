@@ -68,6 +68,9 @@ helm install harbor .
 helm install -n default gateway2 gateway/ 
 helm uninstall gateway2
 
+kubectl autoscale deployment user-service --cpu-percent=50 --min=1 --max=5
+kubectl delete hpa user-service 
+kubectl get hpa
 
 ===
 
